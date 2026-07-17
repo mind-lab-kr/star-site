@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>별자리 궁합 보기 | 나의 별자리 운세</title>
+<meta name="description" content="나와 상대방의 별자리 궁합 점수와 상세 궁합을 확인해보세요." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+</head>
+<body data-page="compat">
+
+<canvas id="shooting-star-canvas"></canvas>
+<div id="twinkle-layer"></div>
+
+<div class="page-wrap">
+
+  <a href="index.html" class="back-link">← 처음으로</a>
+
+  <header class="site-header">
+    <h1 class="site-title">💕 별자리 궁합 보기</h1>
+    <p class="site-subtitle">나와 상대방의 별자리 궁합을 확인해보세요</p>
+  </header>
+
+  <div class="compat-select-card glass-card">
+    <div class="compat-select-row">
+      <div class="compat-select-col">
+        <label for="my-sign-select">내 별자리</label>
+        <select id="my-sign-select" class="styled-select"></select>
+      </div>
+      <span class="vs">❤️</span>
+      <div class="compat-select-col">
+        <label for="partner-sign-select">상대 별자리</label>
+        <select id="partner-sign-select" class="styled-select"></select>
+      </div>
+    </div>
+    <button id="compat-btn" class="primary-btn">💫 궁합 보기</button>
+  </div>
+
+  <div id="compat-result" class="hidden-el">
+
+    <div class="compat-result-header">
+      <div class="compat-symbols">
+        <span id="compat-symbol-a"></span>
+        <span class="heart">💗</span>
+        <span id="compat-symbol-b"></span>
+      </div>
+      <p id="compat-name-pair" class="result-range"></p>
+      <div id="compat-score-num" class="compat-score-big"></div>
+      <div id="compat-grade" class="compat-grade-badge"></div>
+    </div>
+
+    <section class="section">
+      <h2 class="section-title"><span class="bar"></span>능력치 비교</h2>
+      <div class="chart-card glass-card">
+        <canvas id="compat-radar-chart" width="320" height="320"></canvas>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span class="bar"></span>궁합 상세 설명</h2>
+      <p id="compat-detail-text" class="compat-detail-text glass-card"></p>
+    </section>
+
+    <section class="section">
+      <div class="good-bad-grid">
+        <div class="good-bad-card glass-card">
+          <div class="gb-title">💚 잘 맞는 점</div>
+          <ul id="compat-good-list"></ul>
+        </div>
+        <div class="good-bad-card glass-card">
+          <div class="gb-title">⚠️ 주의할 점</div>
+          <ul id="compat-caution-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="coupang-banner glass-card">
+        <div class="cb-title">✨ 우리 커플을 위한 아이템</div>
+        <p class="cb-sub">함께하는 시간을 더 특별하게 만들어줄 아이템을 만나보세요 🛍️</p>
+        <a id="compat-coupang-btn" class="coupang-btn" target="_blank" rel="noopener">🛍️ 추천 아이템 보러가기</a>
+        <p class="coupang-fine-print">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

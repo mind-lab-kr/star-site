@@ -1,0 +1,914 @@
+/* ==========================================================================
+   별자리 운세 사이트 - 스타일시트
+   ========================================================================== */
+
+:root {
+  --bg-navy: #0a0a2e;
+  --bg-purple: #1a0a3e;
+  --accent: #a78bfa;
+  --accent-2: #f9ca24;
+  --text-light: #f4f2ff;
+  --text-dim: #b8b2d6;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --sign-color: #a78bfa; /* 페이지별로 JS에서 덮어씀 */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  background: radial-gradient(ellipse at top, var(--bg-purple) 0%, var(--bg-navy) 55%, #05051a 100%);
+  color: var(--text-light);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+/* ----- 배경 캔버스 & 반짝이는 별 ----- */
+#shooting-star-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#twinkle-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.twinkle-star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.page-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+/* ----- 헤더 / 타이틀 ----- */
+.site-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.site-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, #d9c8ff 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.5px;
+  animation: glow-title 3s ease-in-out infinite;
+}
+
+@keyframes glow-title {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.3)); }
+  50% { filter: drop-shadow(0 0 16px rgba(167, 139, 250, 0.6)); }
+}
+
+.site-subtitle {
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 0.98rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  border: 1px solid var(--glass-border);
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.back-link:hover {
+  background: var(--glass-bg);
+  color: #fff;
+}
+
+/* ----- 글래스모피즘 카드 공통 ----- */
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ----- 날짜 선택 폼 ----- */
+.date-form {
+  padding: 28px 24px;
+  margin-bottom: 40px;
+}
+
+.select-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.styled-select {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  color: var(--text-light);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.styled-select option {
+  background: #1a0a3e;
+  color: #fff;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa 50%, #f9ca24);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  transition: background-position 0.4s, transform 0.15s, box-shadow 0.3s;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-btn:hover {
+  background-position: 100% 50%;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.5);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+.primary-btn.sparkle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0);
+}
+
+.primary-btn.sparkle.active::after {
+  animation: sparkle-burst 0.6s ease-out;
+}
+
+@keyframes sparkle-burst {
+  0% { opacity: 0.9; transform: scale(0); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+/* ----- 별자리 카드 그리드 ----- */
+.section-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-light);
+}
+
+.zodiac-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.zodiac-card {
+  padding: 18px 10px;
+  text-align: center;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  cursor: pointer;
+}
+
+.zodiac-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  border-color: var(--card-color, var(--accent));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 20px var(--card-glow, transparent);
+}
+
+.zodiac-card .symbol {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 6px;
+  color: var(--card-color, #fff);
+  text-shadow: 0 0 14px var(--card-glow, transparent);
+}
+
+.zodiac-card .name {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.zodiac-card .range {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+/* ----- 쿠팡 고지 문구 ----- */
+.coupang-disclosure {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 20px;
+}
+
+/* ----- 결과 페이지 헤더 ----- */
+.result-header {
+  text-align: center;
+  padding: 40px 20px 30px;
+}
+
+.result-symbol {
+  font-size: 4.5rem;
+  display: inline-block;
+  color: var(--sign-color);
+  text-shadow: 0 0 30px var(--sign-color);
+  animation: spin-symbol 8s linear infinite, pulse-symbol 2.4s ease-in-out infinite;
+}
+
+@keyframes spin-symbol {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-symbol {
+  0%, 100% { filter: drop-shadow(0 0 10px var(--sign-color)); }
+  50% { filter: drop-shadow(0 0 26px var(--sign-color)); }
+}
+
+.result-name {
+  font-size: 1.9rem;
+  font-weight: 900;
+  margin-top: 14px;
+}
+
+.result-range {
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.result-meta {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.result-meta span b {
+  color: var(--sign-color);
+}
+
+/* ----- 섹션 공통 ----- */
+.section {
+  margin: 40px 0;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title .bar {
+  width: 5px;
+  height: 20px;
+  background: var(--sign-color);
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* ----- 특징 카드 ----- */
+.trait-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.trait-card {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.trait-card .icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.trait-card .title {
+  font-weight: 700;
+  font-size: 0.94rem;
+  margin-bottom: 4px;
+}
+
+.trait-card .desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ----- 수호 정보 ----- */
+.guardian-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.guardian-item {
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.guardian-item .g-icon {
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+
+.guardian-item .g-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.guardian-item .g-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sign-color);
+}
+
+/* ----- 잠금 / 블러 섹션 ----- */
+.lock-wrapper {
+  position: relative;
+  margin-top: 30px;
+}
+
+.blurred {
+  filter: blur(10px);
+  user-select: none;
+  pointer-events: none;
+  transition: filter 0.8s ease;
+}
+
+.blurred.unlocked {
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(10, 10, 46, 0.2), rgba(10, 10, 46, 0.85) 40%);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  transition: opacity 0.6s ease;
+}
+
+.lock-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lock-icon {
+  font-size: 2.6rem;
+}
+
+.unlock-btn {
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #1a0a1a;
+  background: linear-gradient(135deg, #f9ca24, #f0932b);
+  box-shadow: 0 8px 24px rgba(249, 202, 36, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.unlock-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(249, 202, 36, 0.55);
+}
+
+.countdown-display {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent-2);
+  min-height: 1.6em;
+}
+
+.fade-in-content {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.fade-in-content.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ----- 레이더 차트 ----- */
+.chart-card {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.chart-card canvas {
+  max-width: 100%;
+}
+
+/* ----- 오늘의 운세 ----- */
+.fortune-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.fortune-card {
+  padding: 16px;
+}
+
+.fortune-card .f-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.fortune-card .stars {
+  color: var(--accent-2);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.fortune-card .f-desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.lucky-today {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lucky-today .lucky-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.lucky-today .color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.lucky-today .advice {
+  flex: 1;
+  min-width: 200px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* ----- 연간 운세 ----- */
+.yearly-card {
+  padding: 22px;
+}
+
+.yearly-overall {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  margin-bottom: 18px;
+  color: var(--text-light);
+}
+
+.yearly-sub-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.yearly-sub-item {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border-left: 3px solid var(--sign-color);
+}
+
+.yearly-sub-item .y-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.yearly-sub-item .y-desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+/* ----- 궁합 섹션 ----- */
+.compat-top-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.compat-card {
+  padding: 16px 10px;
+  text-align: center;
+}
+
+.compat-card .rank {
+  font-size: 0.7rem;
+  color: var(--accent-2);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.compat-card .symbol {
+  font-size: 1.8rem;
+  display: block;
+}
+
+.compat-card .name {
+  font-weight: 700;
+  font-size: 0.86rem;
+  margin: 4px 0 6px;
+}
+
+.compat-card .reason {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.compat-avoid-card {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-left: 3px solid #e17055;
+}
+
+.compat-avoid-card .symbol {
+  font-size: 1.8rem;
+}
+
+.compat-avoid-card .name {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.compat-avoid-card .reason {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.secondary-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 13px 24px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+  transition: 0.2s;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--sign-color);
+}
+
+/* ----- 공유 버튼 ----- */
+.share-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.share-btn {
+  padding: 14px 8px;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  transition: 0.2s;
+}
+
+.share-btn.kakao {
+  background: #fee500;
+  color: #3c1e1e;
+}
+
+.share-btn.copy {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.share-btn.friend {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(20, 20, 40, 0.95);
+  border: 1px solid var(--glass-border);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ----- 쿠팡 배너 ----- */
+.coupang-banner {
+  padding: 26px 22px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(249, 202, 36, 0.12), rgba(240, 147, 43, 0.08));
+  border: 1px solid rgba(249, 202, 36, 0.35);
+}
+
+.coupang-banner .cb-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.coupang-banner .cb-sub {
+  font-size: 0.86rem;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.coupang-btn {
+  display: inline-block;
+  padding: 15px 32px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #1a0a1a;
+  background: linear-gradient(135deg, #f9ca24, #f0932b, #f9ca24);
+  background-size: 200% 100%;
+  box-shadow: 0 8px 24px rgba(249, 202, 36, 0.4);
+  animation: gradient-shift 3s ease infinite;
+  transition: transform 0.2s;
+}
+
+.coupang-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.coupang-fine-print {
+  margin-top: 16px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.65;
+}
+
+/* ----- 궁합 페이지 ----- */
+.compat-select-card {
+  padding: 26px 22px;
+  margin-bottom: 30px;
+}
+
+.compat-select-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.compat-select-row .vs {
+  font-weight: 900;
+  color: var(--accent-2);
+  font-size: 1.1rem;
+}
+
+.compat-select-col {
+  flex: 1;
+}
+
+.compat-select-col label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.compat-result-header {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.compat-symbols {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.compat-symbols .heart {
+  font-size: 1.6rem;
+}
+
+.compat-score-big {
+  font-size: 3.4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f9ca24, #ff6b9d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.compat-grade-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.compat-detail-text {
+  padding: 20px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-light);
+}
+
+.good-bad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.good-bad-card {
+  padding: 16px;
+}
+
+.good-bad-card .gb-title {
+  font-weight: 800;
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+}
+
+.good-bad-card ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.good-bad-card li {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding-left: 16px;
+  position: relative;
+}
+
+.good-bad-card li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--sign-color);
+}
+
+.hidden-el {
+  display: none !important;
+}
+
+/* ----- 반응형 ----- */
+@media (max-width: 640px) {
+  .site-title { font-size: 1.6rem; }
+  .zodiac-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .trait-grid { grid-template-columns: 1fr; }
+  .guardian-grid { grid-template-columns: repeat(2, 1fr); }
+  .compat-top-grid { grid-template-columns: 1fr; }
+  .fortune-grid { grid-template-columns: 1fr; }
+  .good-bad-grid { grid-template-columns: 1fr; }
+  .share-row { grid-template-columns: 1fr; }
+  .select-row { flex-direction: column; }
+  .compat-select-row { flex-direction: column; }
+  .compat-select-row .vs { display: none; }
+  .result-symbol { font-size: 3.6rem; }
+  .compat-symbols { font-size: 2.2rem; }
+  .compat-score-big { font-size: 2.6rem; }
+}
+
+@media (max-width: 420px) {
+  .zodiac-grid { grid-template-columns: repeat(2, 1fr); }
+}

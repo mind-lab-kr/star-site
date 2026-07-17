@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>별자리 운세 결과 | 나의 별자리 운세</title>
+<meta name="description" content="나의 별자리 성격, 오늘의 운세, 2026년 연간 운세와 궁합을 확인해보세요." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+</head>
+<body data-page="result">
+
+<canvas id="shooting-star-canvas"></canvas>
+<div id="twinkle-layer"></div>
+
+<div class="page-wrap">
+
+  <a href="index.html" class="back-link">← 처음으로</a>
+
+  <header id="result-header" class="result-header">
+    <span id="result-symbol" class="result-symbol">✨</span>
+    <h1 id="result-name" class="result-name"></h1>
+    <p id="result-range" class="result-range"></p>
+    <div class="result-meta">
+      <span>원소 <b id="result-element"></b></span>
+      <span>지배 행성 <b id="result-planet"></b></span>
+    </div>
+  </header>
+
+  <!-- 1단계: 무료 공개 -->
+  <section class="section">
+    <h2 class="section-title"><span class="bar"></span>대표 성격 특징</h2>
+    <div id="free-traits" class="trait-grid"></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title"><span class="bar"></span>수호 정보</h2>
+    <div class="guardian-grid">
+      <div class="guardian-item glass-card">
+        <div class="g-icon">💎</div>
+        <div class="g-label">수호석</div>
+        <div id="guardian-stone" class="g-value"></div>
+      </div>
+      <div class="guardian-item glass-card">
+        <div class="g-icon">🎨</div>
+        <div class="g-label">수호색</div>
+        <div id="guardian-color" class="g-value"></div>
+      </div>
+      <div class="guardian-item glass-card">
+        <div class="g-icon">🐾</div>
+        <div class="g-label">수호동물</div>
+        <div id="guardian-animal" class="g-value"></div>
+      </div>
+      <div class="guardian-item glass-card">
+        <div class="g-icon">🔢</div>
+        <div class="g-label">행운의 숫자</div>
+        <div id="guardian-number" class="g-value"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2단계: 잠금 -->
+  <div class="lock-wrapper">
+
+    <div id="locked-content" class="blurred">
+      <div id="fade-content" class="fade-in-content">
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>성격 특징 전체 10가지</h2>
+          <div id="all-traits" class="trait-grid"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>나의 별자리 능력치</h2>
+          <div class="chart-card glass-card">
+            <canvas id="radar-chart" width="320" height="320"></canvas>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>오늘의 운세</h2>
+          <div id="today-fortune-grid" class="fortune-grid"></div>
+          <div id="today-lucky" class="lucky-today glass-card"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>2026년 연간 운세</h2>
+          <div class="yearly-card glass-card">
+            <p id="yearly-overall" class="yearly-overall"></p>
+            <div class="yearly-sub-grid">
+              <div class="yearly-sub-item">
+                <div class="y-title">❤️ 애정운</div>
+                <div id="yearly-love" class="y-desc"></div>
+              </div>
+              <div class="yearly-sub-item">
+                <div class="y-title">💰 금전운</div>
+                <div id="yearly-money" class="y-desc"></div>
+              </div>
+              <div class="yearly-sub-item">
+                <div class="y-title">💪 건강운</div>
+                <div id="yearly-health" class="y-desc"></div>
+              </div>
+              <div class="yearly-sub-item">
+                <div class="y-title">💼 직장운</div>
+                <div id="yearly-work" class="y-desc"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>나와 잘 맞는 별자리</h2>
+          <div id="compat-top3" class="compat-top-grid"></div>
+          <div id="compat-avoid" class="compat-avoid-card glass-card"></div>
+          <a id="compat-detail-link" href="compatibility.html" class="secondary-btn">💕 상세 궁합 보기</a>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span class="bar"></span>결과 공유하기</h2>
+          <div class="share-row">
+            <button id="share-kakao" class="share-btn kakao">💬 카카오톡 공유</button>
+            <button id="share-copy" class="share-btn copy">🔗 링크 복사</button>
+            <button id="share-friend" class="share-btn friend">👀 친구 별자리 보기</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="coupang-banner glass-card">
+            <div class="cb-title">✨ 오늘의 행운 아이템</div>
+            <p id="coupang-phrase" class="cb-sub"></p>
+            <button id="coupang-btn" class="coupang-btn">🛍️ 행운 아이템 보러가기</button>
+            <p class="coupang-fine-print">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <div id="lock-overlay" class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <p>지금부터는 잠겨있는 콘텐츠예요</p>
+      <button id="unlock-btn" class="unlock-btn">🔮 정밀 운세 + 오늘의 행운 아이템 보기</button>
+      <div id="countdown-display" class="countdown-display"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
