@@ -63,7 +63,7 @@ function initHome() {
 
   const monthSel = document.getElementById('month-select');
   const daySel = document.getElementById('day-select');
-  const btn = document.getElementById('check-btn');
+  const btn = document.getElementById('find-sign-btn');
   const signListEl = document.getElementById('sign-list');
 
   // 월 옵션
@@ -122,6 +122,9 @@ const TOTAL_SLIDES = 6;
 const COUPANG_SLIDE = 3;
 let currentSlide = 1;
 let fortuneUnlocked = false;
+let coupangWindow = null;
+let coupangCheckInterval = null;
+let waitingForCoupang = false;
 
 function initResult() {
   initTwinkle();
@@ -230,16 +233,45 @@ function initSlideNav(key, z) {
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       if (currentSlide === COUPANG_SLIDE && !fortuneUnlocked) {
-        // 쿠팡 새탭 열기 후 운세 공개
-        const coupangUrl = z.coupang || '#';
-        window.open(coupangUrl, '_blank');
-        unlockFortune(key, z);
-        setTimeout(() => goToSlide(currentSlide + 1), 400);
+        openCoupangAndWait(key, z);
         return;
       }
       if (currentSlide < TOTAL_SLIDES) goToSlide(currentSlide + 1);
     });
   }
+}
+
+// 쿠팡 창을 열고, 창이 닫히는 것을 감지해서 운세를 공개한다
+function openCoupangAndWait(key, z) {
+  if (waitingForCoupang) {
+    if (coupangWindow && !coupangWindow.closed) coupangWindow.focus();
+    return;
+  }
+
+  const coupangUrl = z.coupang || '#';
+  coupangWindow = window.open(coupangUrl, '_blank');
+
+  // 팝업이 차단된 경우 즉시 운세 공개로 폴백
+  if (!coupangWindow) {
+    unlockFortune(key, z);
+    goToSlide(currentSlide + 1);
+    return;
+  }
+
+  waitingForCoupang = true;
+  const lockHint = document.getElementById('lock-hint');
+  if (lockHint) lockHint.textContent = '🪟 쿠팡 창을 닫으면 운세가 자동으로 공개돼요...';
+  updateSlideNav();
+
+  coupangCheckInterval = setInterval(() => {
+    if (coupangWindow && coupangWindow.closed) {
+      clearInterval(coupangCheckInterval);
+      coupangCheckInterval = null;
+      waitingForCoupang = false;
+      unlockFortune(key, z);
+      goToSlide(currentSlide + 1);
+    }
+  }, 500);
 }
 
 function goToSlide(n) {
@@ -279,7 +311,11 @@ function updateSlideNav() {
   if (prevBtn) prevBtn.disabled = currentSlide === 1;
   if (nextBtn) {
     nextBtn.disabled = currentSlide === TOTAL_SLIDES;
-    nextBtn.textContent = (currentSlide === COUPANG_SLIDE && !fortuneUnlocked) ? '운세 공개하기 🔓' : '다음 →';
+    if (currentSlide === COUPANG_SLIDE && !fortuneUnlocked) {
+      nextBtn.textContent = waitingForCoupang ? '창 닫으면 자동 공개돼요...' : '운세 공개하기 🔓';
+    } else {
+      nextBtn.textContent = '다음 →';
+    }
   }
   if (progressEl) progressEl.textContent = `${currentSlide} / ${TOTAL_SLIDES}`;
 
