@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>나의 별자리 운세</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<title>나의 별자리 운세 ✨</title>
+<meta name="description" content="생년월일로 알아보는 나의 별자리 운세" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="style.css" />
 </head>
@@ -13,23 +12,25 @@
 <canvas id="shooting-star-canvas"></canvas>
 <div id="twinkle-layer"></div>
 <div class="page-wrap">
+
   <header class="site-header">
     <h1 class="site-title">✨ 나의 별자리 운세</h1>
     <p class="site-subtitle">생년월일로 알아보는 나의 운명과 오늘의 운세</p>
     <p class="birth-notice">🗓️ 양력(서양력) 생일로 입력해주세요</p>
-    <p class="birth-notice-sub">※ 음력 생일이라면 양력으로 변환 후 입력하세요</p>
+    <p class="birth-sub-notice">※ 음력 생일이라면 양력으로 변환 후 입력하세요</p>
   </header>
-  <div class="date-select-card glass-card">
+
+  <div class="glass-card">
     <div class="date-select-row">
-      <select id="month-select" class="styled-select"></select>
-      <select id="day-select" class="styled-select"></select>
+      <select id="month-select"></select>
+      <select id="day-select"></select>
     </div>
-    <button id="find-btn" class="primary-btn">🔮 내 별자리 알아보기</button>
+    <button id="find-sign-btn" class="main-btn">🔮 내 별자리 알아보기</button>
   </div>
-  <div class="sign-grid">
-    <div class="sign-grid-title">🌟 12개 별자리</div>
-    <div id="sign-list" class="sign-list"></div>
-  </div>
+
+  <div class="section-title">🌟 12개 별자리</div>
+  <div id="sign-list"></div>
+
 </div>
 <script src="data.js"></script>
 <script src="app.js"></script>
