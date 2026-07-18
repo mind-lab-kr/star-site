@@ -144,9 +144,10 @@ function initResult() {
   // 특성 뱃지
   const traitsEl = document.getElementById('result-traits');
   if (traitsEl && z.traits) {
-    traitsEl.innerHTML = z.traits.map(t => `<span class="trait-badge">${t}</span>`).join('');
-  }
-
+   traitsEl.innerHTML = z.traits.map(t => {
+  if (typeof t === 'object') return `<span class="trait-badge">${t.icon || ''} ${t.title || ''}</span>`;
+  return `<span class="trait-badge">${t}</span>`;
+}).join('');
   // ⭐ 능력치 바
   if (z.stats) {
     const statMap = {
