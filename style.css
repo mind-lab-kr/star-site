@@ -122,6 +122,15 @@ button {
   letter-spacing: 0.3px;
 }
 
+.birth-notice-sub {
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 4px;
+  letter-spacing: 0.2px;
+}
+
 .back-link {
   display: inline-block;
   margin-top: 14px;
