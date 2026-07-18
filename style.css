@@ -114,6 +114,14 @@ button {
   font-size: 0.98rem;
 }
 
+.birth-notice {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: #f472b6;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
 .back-link {
   display: inline-block;
   margin-top: 14px;
