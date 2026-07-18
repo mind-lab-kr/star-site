@@ -118,6 +118,11 @@ function initHome() {
 }
 
 // ===================== 결과 페이지 =====================
+const TOTAL_SLIDES = 6;
+const COUPANG_SLIDE = 3;
+let currentSlide = 1;
+let fortuneUnlocked = false;
+
 function initResult() {
   initTwinkle();
   initShootingStar();
@@ -141,32 +146,21 @@ function initResult() {
   const plEl = document.getElementById('result-planet');
   if (plEl) plEl.textContent = z.planet || '';
 
-  // 특성 뱃지
+  // 특성 뱃지 (traits는 {icon, title, desc} 객체 배열)
   const traitsEl = document.getElementById('result-traits');
   if (traitsEl && z.traits) {
-   traitsEl.innerHTML = z.traits.map(t => {
-  if (typeof t === 'object') return `<span class="trait-badge">${t.icon || ''} ${t.title || ''}</span>`;
-  return `<span class="trait-badge">${t}</span>`;
-}).join('');
-  // ⭐ 능력치 바
-  if (z.stats) {
-    const statMap = {
-      leadership: ['stat-bar-leadership', 'stat-val-leadership'],
-      sensitivity: ['stat-bar-sensitivity', 'stat-val-sensitivity'],
-      activity:    ['stat-bar-activity',    'stat-val-activity'],
-      creativity:  ['stat-bar-creativity',  'stat-val-creativity'],
-      sociability: ['stat-bar-sociability', 'stat-val-sociability'],
-    };
-    setTimeout(() => {
-      Object.entries(statMap).forEach(([statKey, [barId, valId]]) => {
-        const val = z.stats[statKey] || 0;
-        const bar = document.getElementById(barId);
-        const valEl = document.getElementById(valId);
-        if (bar) bar.style.width = val + '%';
-        if (valEl) valEl.textContent = val;
-      });
-    }, 100);
+    traitsEl.innerHTML = z.traits.map(t => {
+      if (typeof t === 'object') return `<span class="trait-badge">${t.icon || ''} ${t.title || ''}</span>`;
+      return `<span class="trait-badge">${t}</span>`;
+    }).join('');
   }
+
+  // 별자리 설명 (있으면 표시)
+  const descEl = document.getElementById('result-description');
+  if (descEl && z.description) descEl.textContent = z.description;
+
+  // ⭐ 능력치 바
+  renderStatBars(z);
 
   // 수호 아이템
   const stoneEl = document.getElementById('result-stone');
@@ -176,87 +170,223 @@ function initResult() {
   if (stoneEl) stoneEl.textContent = z.guardianStone || '';
   if (colorEl) colorEl.textContent = z.guardianColor || '';
   if (animalEl) animalEl.textContent = z.guardianAnimal || '';
-  if (luckyEl) luckyEl.textContent = (z.luckyNumbers || []).join(', ');
+  if (luckyEl) {
+    const luckyNums = z.luckyNumbers || (z.luckyNumber !== undefined ? [z.luckyNumber] : []);
+    luckyEl.textContent = luckyNums.join(', ');
+  }
 
-  // 별자리 설명 (있으면 표시)
-  const descEl = document.getElementById('result-description');
-  if (descEl && z.description) descEl.textContent = z.description;
+  initSlideNav(key, z);
+}
 
-  // 잠금 버튼 연동
-  const lockBtn = document.getElementById('lock-btn');
-  if (lockBtn) {
-    const coupangUrl = z.coupang || '#';
-    lockBtn.addEventListener('click', () => {
-      // 쿠팡 새탭 열기
-      window.open(coupangUrl, '_blank');
-      // 운세 공개
-      setTimeout(() => unlockFortune(key, z), 500);
+// ===================== 능력치 바 렌더 =====================
+function renderStatBars(z) {
+  if (!z.stats) return;
+  const statMap = {
+    leadership: ['stat-bar-leadership', 'stat-val-leadership'],
+    sensitivity: ['stat-bar-sensitivity', 'stat-val-sensitivity'],
+    activity:    ['stat-bar-activity',    'stat-val-activity'],
+    creativity:  ['stat-bar-creativity',  'stat-val-creativity'],
+    sociability: ['stat-bar-sociability', 'stat-val-sociability'],
+  };
+  Object.entries(statMap).forEach(([statKey, [barId, valId]]) => {
+    const bar = document.getElementById(barId);
+    if (bar) bar.style.width = '0%';
+  });
+  setTimeout(() => {
+    Object.entries(statMap).forEach(([statKey, [barId, valId]]) => {
+      const val = z.stats[statKey] || 0;
+      const bar = document.getElementById(barId);
+      const valEl = document.getElementById(valId);
+      if (bar) bar.style.width = val + '%';
+      if (valEl) valEl.textContent = val;
+    });
+  }, 100);
+}
+
+// ===================== 슬라이드 네비게이션 =====================
+function initSlideNav(key, z) {
+  const prevBtn = document.getElementById('slide-prev');
+  const nextBtn = document.getElementById('slide-next');
+  const dotsEl = document.getElementById('slide-dots');
+
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    for (let i = 1; i <= TOTAL_SLIDES; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'slide-dot' + (i === 1 ? ' active' : '');
+      dot.dataset.slide = i;
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  updateSlideNav();
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 1) goToSlide(currentSlide - 1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (currentSlide === COUPANG_SLIDE && !fortuneUnlocked) {
+        // 쿠팡 새탭 열기 후 운세 공개
+        const coupangUrl = z.coupang || '#';
+        window.open(coupangUrl, '_blank');
+        unlockFortune(key, z);
+        setTimeout(() => goToSlide(currentSlide + 1), 400);
+        return;
+      }
+      if (currentSlide < TOTAL_SLIDES) goToSlide(currentSlide + 1);
     });
   }
 }
 
+function goToSlide(n) {
+  if (n < 1 || n > TOTAL_SLIDES) return;
+  currentSlide = n;
+
+  document.querySelectorAll('.slide').forEach(slide => {
+    slide.classList.remove('active');
+  });
+  const target = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (target) {
+    // fadeInUp 애니메이션 재생을 위해 리플로우 강제
+    target.classList.remove('active');
+    void target.offsetWidth;
+    target.classList.add('active');
+  }
+
+  if (n === 2) renderStatBarsIfNeeded();
+
+  updateSlideNav();
+}
+
+function renderStatBarsIfNeeded() {
+  document.querySelectorAll('.stat-bar').forEach(bar => {
+    const width = bar.style.width;
+    bar.style.width = '0%';
+    void bar.offsetWidth;
+    bar.style.width = width;
+  });
+}
+
+function updateSlideNav() {
+  const prevBtn = document.getElementById('slide-prev');
+  const nextBtn = document.getElementById('slide-next');
+  const progressEl = document.getElementById('slide-progress-text');
+
+  if (prevBtn) prevBtn.disabled = currentSlide === 1;
+  if (nextBtn) {
+    nextBtn.disabled = currentSlide === TOTAL_SLIDES;
+    nextBtn.textContent = (currentSlide === COUPANG_SLIDE && !fortuneUnlocked) ? '운세 공개하기 🔓' : '다음 →';
+  }
+  if (progressEl) progressEl.textContent = `${currentSlide} / ${TOTAL_SLIDES}`;
+
+  document.querySelectorAll('.slide-dot').forEach(dot => {
+    dot.classList.toggle('active', Number(dot.dataset.slide) === currentSlide);
+  });
+}
+
 // ===================== 운세 공개 =====================
 function unlockFortune(key, z) {
-  // 잠금 배너 숨기기
-  const lockSection = document.getElementById('lock-section');
-  if (lockSection) lockSection.style.display = 'none';
+  if (fortuneUnlocked) return;
+  fortuneUnlocked = true;
 
-  // 운세 섹션 보이기
-  const fortuneSection = document.getElementById('fortune-section');
-  if (fortuneSection) fortuneSection.style.display = 'block';
+  const lockHint = document.getElementById('lock-hint');
+  if (lockHint) lockHint.textContent = '✅ 운세가 공개되었어요! 다음 버튼을 눌러 확인해보세요';
 
   // 오늘의 운세 계산
   const fortune = getDailyFortune(key);
 
   // 별점 렌더
-  function stars(n) { return '⭐'.repeat(n) + '☆'.repeat(5-n); }
+  function stars(n) { return '⭐'.repeat(n) + '☆'.repeat(5 - n); }
 
   const fl = document.getElementById('fortune-love');
   const fm = document.getElementById('fortune-money');
   const fh = document.getElementById('fortune-health');
   const fw = document.getElementById('fortune-work');
-  if (fl) fl.textContent = stars(fortune.love);
-  if (fm) fm.textContent = stars(fortune.money);
-  if (fh) fh.textContent = stars(fortune.health);
-  if (fw) fw.textContent = stars(fortune.work);
+  if (fl) fl.textContent = stars(fortune.love.stars);
+  if (fm) fm.textContent = stars(fortune.money.stars);
+  if (fh) fh.textContent = stars(fortune.health.stars);
+  if (fw) fw.textContent = stars(fortune.work.stars);
 
-  // 운세 메시지
+  // 운세 메시지 (오늘의 조언)
   const msgEl = document.getElementById('fortune-message');
-  if (msgEl) msgEl.textContent = fortune.message || '';
+  if (msgEl) msgEl.textContent = fortune.advice || '';
 
-  // 행운 색상 & 조언
+  // 행운 색상 (객체면 .name으로 읽기)
   const lcEl = document.getElementById('fortune-lucky-color');
-  const laEl = document.getElementById('fortune-lucky-advice');
-  if (lcEl) lcEl.textContent = fortune.luckyColor || '';
-  if (laEl) laEl.textContent = fortune.luckyAdvice || '';
+  if (lcEl) {
+    const lc = fortune.luckyColor;
+    lcEl.textContent = (lc && typeof lc === 'object') ? (lc.name || '') : (lc || '');
+  }
 
   // 연간 운세 (현재 연도 자동)
   const currentYear = new Date().getFullYear();
+  const yearly = z.yearlyForecast?.[currentYear] || z['yearly' + currentYear] || z.yearly2026 || null;
   const yearlyEl = document.getElementById('fortune-yearly');
+  const yearlyDetailEl = document.getElementById('fortune-yearly-detail');
+  const yearLabelEl = document.getElementById('yearly-year-label');
+  if (yearLabelEl) yearLabelEl.textContent = currentYear + '년 연간 운세';
+
   if (yearlyEl) {
-    const yearly = z.yearlyForecast?.[currentYear] || z.yearlyForecast?.[2026] || '올 한 해도 별자리의 기운을 받아 좋은 일이 가득하길 바랍니다!';
-    yearlyEl.textContent = yearly;
-    const yearLabelEl = document.getElementById('yearly-year-label');
-    if (yearLabelEl) yearLabelEl.textContent = currentYear + '년 연간 운세';
+    if (typeof yearly === 'string') {
+      yearlyEl.textContent = yearly;
+    } else if (yearly && typeof yearly === 'object') {
+      yearlyEl.textContent = yearly.overall || '';
+    } else {
+      yearlyEl.textContent = '올 한 해도 별자리의 기운을 받아 좋은 일이 가득하길 바랍니다!';
+    }
   }
 
-  // 궁합 TOP 3
+  if (yearlyDetailEl) {
+    if (yearly && typeof yearly === 'object') {
+      const items = [
+        ['💕 연애', yearly.love],
+        ['💰 금전', yearly.money],
+        ['💪 건강', yearly.health],
+        ['💼 직업', yearly.work],
+      ];
+      yearlyDetailEl.innerHTML = items
+        .filter(([, text]) => !!text)
+        .map(([label, text]) => `
+          <div class="yearly-detail-item">
+            <div class="yearly-detail-label">${label}</div>
+            <div class="yearly-detail-text">${text}</div>
+          </div>
+        `).join('');
+    } else {
+      yearlyDetailEl.innerHTML = '';
+    }
+  }
+
+  // 궁합 TOP 3 + 주의 별자리
   const compatEl = document.getElementById('result-compat-list');
-  if (compatEl && z.compatibility) {
+  const avoidEl = document.getElementById('result-avoid');
+  if (z.compatibility) {
     const top3 = z.compatibility.top3 || [];
-    const avoid = z.compatibility.avoid || [];
-    compatEl.innerHTML = top3.map(k => {
-      const cz = ZODIAC[k];
-      return cz ? `<div class="compat-item good">${cz.symbol} <b>${cz.name}</b> — 찰떡 궁합! 💕</div>` : '';
-    }).join('') +
-    avoid.map(k => {
-      const cz = ZODIAC[k];
-      return cz ? `<div class="compat-item caution">${cz.symbol} <b>${cz.name}</b> — 신중하게 ⚠️</div>` : '';
-    }).join('');
-  }
+    if (compatEl) {
+      compatEl.innerHTML = top3.map(item => {
+        const skey = typeof item === 'object' ? item.sign : item;
+        const reason = typeof item === 'object' ? item.reason : '';
+        const cz = ZODIAC[skey];
+        if (!cz) return '';
+        return `<div class="compat-item good">${cz.symbol} <b>${cz.name}</b> 💕${reason ? `<div class="compat-reason">${reason}</div>` : ''}</div>`;
+      }).join('');
+    }
 
-  // 스크롤
-  if (fortuneSection) fortuneSection.scrollIntoView({ behavior: 'smooth' });
+    if (avoidEl) {
+      const avoidList = Array.isArray(z.compatibility.avoid) ? z.compatibility.avoid : (z.compatibility.avoid ? [z.compatibility.avoid] : []);
+      avoidEl.innerHTML = avoidList.map(item => {
+        const skey = typeof item === 'object' ? item.sign : item;
+        const reason = typeof item === 'object' ? item.reason : '';
+        const cz = ZODIAC[skey];
+        if (!cz) return '';
+        return `<div class="compat-item caution">${cz.symbol} <b>${cz.name}</b> ⚠️${reason ? `<div class="compat-reason">${reason}</div>` : ''}</div>`;
+      }).join('');
+    }
+  }
 }
 
 // ===================== 궁합 페이지 =====================

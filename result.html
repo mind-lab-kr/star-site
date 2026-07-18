@@ -8,134 +8,214 @@
 <link rel="stylesheet" href="style.css" />
 <style>
   @keyframes twinkle { from{opacity:0.3} to{opacity:1} }
-  .compat-item { padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; font-size: 14px; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .compat-item { padding: 10px 14px; margin-bottom: 8px; border-radius: 10px; font-size: 14px; }
   .compat-item.good { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
   .compat-item.caution { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); }
+  .compat-reason { margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+  .yearly-detail-item { margin-top: 12px; }
+  .yearly-detail-label { font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 4px; }
+  .yearly-detail-text { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.7; }
+
+  /* ===== 슬라이드 ===== */
+  .page-wrap.slides-wrap { padding-bottom: 110px; }
+
+  .slides-container { position: relative; }
+
+  .slide { display: none; }
+  .slide.active { display: block; animation: fadeInUp 0.45s ease; }
+
+  .slide-progress { text-align: center; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+
+  .slide-nav-fixed {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    z-index: 20;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 480px; margin: 0 auto;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: rgba(13,13,43,0.85);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .slide-nav-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .slide-nav-btn:active { transform: scale(0.97); }
+  .slide-nav-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .slide-nav-btn.prev {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+  .slide-nav-btn.next {
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    color: #fff;
+  }
+
+  .slide-dots { display: flex; gap: 6px; flex-shrink: 0; }
+  .slide-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: background 0.2s, transform 0.2s; }
+  .slide-dot.active { background: #f472b6; transform: scale(1.3); }
+
+  .lock-hint { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.55); }
 </style>
 </head>
 <body data-page="result">
 <canvas id="shooting-star-canvas"></canvas>
 <div id="twinkle-layer"></div>
-<div class="page-wrap">
+<div class="page-wrap slides-wrap">
 
   <a href="index.html" class="back-link">← 처음으로</a>
+  <div class="slide-progress"><span id="slide-progress-text">1 / 6</span></div>
 
-  <!-- 기본 정보 (항상 표시) -->
-  <div class="glass-card" style="text-align:center; margin-bottom:20px;">
-    <span id="result-symbol" class="result-symbol"></span>
-    <h1 id="result-name" class="result-name"></h1>
-    <p id="result-date" class="result-date"></p>
-    <div style="margin-top:10px; font-size:13px; color:rgba(255,255,255,0.6);">
-      원소: <b id="result-element" style="color:#a78bfa;"></b>
-      &nbsp;|&nbsp;
-      수호행성: <b id="result-planet" style="color:#f472b6;"></b>
-    </div>
-  </div>
+  <div class="slides-container">
 
-  <!-- 특성 (항상 표시) -->
-  <div class="glass-card">
-    <div class="section-title">✨ 나의 별자리 특성</div>
-    <div id="result-traits" class="traits-list"></div>
-    <p id="result-description" style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.75); line-height:1.7;"></p>
-  </div>
-
-  <!-- 능력치 (항상 표시) -->
-  <div class="glass-card">
-    <div class="section-title">📊 나의 별자리 능력치</div>
-    <div class="stat-row">
-      <span class="stat-label">👑 리더십</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-leadership" style="width:0%"></div></div>
-      <span class="stat-value" id="stat-val-leadership">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">💧 감수성</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-sensitivity" style="width:0%"></div></div>
-      <span class="stat-value" id="stat-val-sensitivity">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">⚡ 활동성</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-activity" style="width:0%"></div></div>
-      <span class="stat-value" id="stat-val-activity">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">🎨 창의력</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-creativity" style="width:0%"></div></div>
-      <span class="stat-value" id="stat-val-creativity">0</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">💬 사교성</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-sociability" style="width:0%"></div></div>
-      <span class="stat-value" id="stat-val-sociability">0</span>
-    </div>
-  </div>
-
-  <!-- 수호 아이템 (항상 표시) -->
-  <div class="glass-card">
-    <div class="section-title">🌟 나의 수호 아이템</div>
-    <div class="info-row"><span class="info-label">💎 수호석</span><span class="info-value" id="result-stone"></span></div>
-    <div class="info-row"><span class="info-label">🎨 수호색</span><span class="info-value" id="result-color"></span></div>
-    <div class="info-row"><span class="info-label">🦁 수호동물</span><span class="info-value" id="result-animal"></span></div>
-    <div class="info-row"><span class="info-label">🔢 행운 숫자</span><span class="info-value" id="result-lucky"></span></div>
-  </div>
-
-  <!-- 잠금 배너 -->
-  <div class="coupang-banner" id="lock-section">
-    <div style="font-size:36px; margin-bottom:10px;">🔮</div>
-    <div class="coupang-title">오늘의 운세 + 연간운세 + 궁합 보기</div>
-    <div class="coupang-subtitle">아래 버튼을 클릭하면 나의 운세와 궁합이 공개됩니다 ✨</div>
-    <button id="lock-btn" class="coupang-btn" style="border:none; cursor:pointer;">
-      🛍️ 행운 아이템 보고 운세 공개하기
-    </button>
-    <p class="coupang-fine-print">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
-  </div>
-
-  <!-- 운세 공개 영역 (처음엔 숨김) -->
-  <div id="fortune-section" style="display:none;">
-
-    <div class="glass-card">
-      <div class="section-title">🔮 오늘의 운세</div>
-      <div class="fortune-grid">
-        <div class="fortune-item">
-          <span class="fortune-emoji">💕</span>
-          <span class="fortune-label">연애운</span>
-          <div class="fortune-stars" id="fortune-love"></div>
-        </div>
-        <div class="fortune-item">
-          <span class="fortune-emoji">💰</span>
-          <span class="fortune-label">금전운</span>
-          <div class="fortune-stars" id="fortune-money"></div>
-        </div>
-        <div class="fortune-item">
-          <span class="fortune-emoji">💪</span>
-          <span class="fortune-label">건강운</span>
-          <div class="fortune-stars" id="fortune-health"></div>
-        </div>
-        <div class="fortune-item">
-          <span class="fortune-emoji">💼</span>
-          <span class="fortune-label">직업운</span>
-          <div class="fortune-stars" id="fortune-work"></div>
+    <!-- 1페이지: 기본정보 + 특성 -->
+    <section class="slide active" data-slide="1">
+      <div class="glass-card" style="text-align:center; margin-bottom:20px;">
+        <span id="result-symbol" class="result-symbol"></span>
+        <h1 id="result-name" class="result-name"></h1>
+        <p id="result-date" class="result-date"></p>
+        <div style="margin-top:10px; font-size:13px; color:rgba(255,255,255,0.6);">
+          원소: <b id="result-element" style="color:#a78bfa;"></b>
+          &nbsp;|&nbsp;
+          수호행성: <b id="result-planet" style="color:#f472b6;"></b>
         </div>
       </div>
-      <p id="fortune-message" style="margin-top:14px; font-size:13px; color:rgba(255,255,255,0.85); line-height:1.7; text-align:center;"></p>
-      <div style="margin-top:10px; font-size:12px; color:rgba(255,255,255,0.55); text-align:center;">
-        🎨 오늘의 행운 색상: <b id="fortune-lucky-color" style="color:#f472b6;"></b>
-        &nbsp;|&nbsp;
-        💡 <span id="fortune-lucky-advice"></span>
+
+      <div class="glass-card">
+        <div class="section-title">✨ 나의 별자리 특성</div>
+        <div id="result-traits" class="traits-list"></div>
+        <p id="result-description" style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.75); line-height:1.7;"></p>
       </div>
-    </div>
+    </section>
 
-    <div class="glass-card">
-      <div class="section-title" id="yearly-year-label">2026년 연간 운세</div>
-      <p id="fortune-yearly" style="font-size:14px; color:rgba(255,255,255,0.85); line-height:1.8;"></p>
-    </div>
+    <!-- 2페이지: 능력치 + 수호아이템 -->
+    <section class="slide" data-slide="2">
+      <div class="glass-card">
+        <div class="section-title">📊 나의 별자리 능력치</div>
+        <div class="stat-row">
+          <span class="stat-label">👑 리더십</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-leadership" style="width:0%"></div></div>
+          <span class="stat-value" id="stat-val-leadership">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">💧 감수성</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-sensitivity" style="width:0%"></div></div>
+          <span class="stat-value" id="stat-val-sensitivity">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">⚡ 활동성</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-activity" style="width:0%"></div></div>
+          <span class="stat-value" id="stat-val-activity">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">🎨 창의력</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-creativity" style="width:0%"></div></div>
+          <span class="stat-value" id="stat-val-creativity">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">💬 사교성</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" id="stat-bar-sociability" style="width:0%"></div></div>
+          <span class="stat-value" id="stat-val-sociability">0</span>
+        </div>
+      </div>
 
-    <div class="glass-card">
-      <div class="section-title">💕 별자리 궁합</div>
-      <div id="result-compat-list"></div>
-    </div>
+      <div class="glass-card">
+        <div class="section-title">🌟 나의 수호 아이템</div>
+        <div class="info-row"><span class="info-label">💎 수호석</span><span class="info-value" id="result-stone"></span></div>
+        <div class="info-row"><span class="info-label">🎨 수호색</span><span class="info-value" id="result-color"></span></div>
+        <div class="info-row"><span class="info-label">🦁 수호동물</span><span class="info-value" id="result-animal"></span></div>
+        <div class="info-row"><span class="info-label">🔢 행운 숫자</span><span class="info-value" id="result-lucky"></span></div>
+      </div>
+    </section>
+
+    <!-- 3페이지: 쿠팡 잠금 화면 -->
+    <section class="slide" data-slide="3">
+      <div class="coupang-banner" id="lock-section">
+        <div style="font-size:36px; margin-bottom:10px;">🔮</div>
+        <div class="coupang-title">오늘의 운세 + 연간운세 + 궁합 보기</div>
+        <div class="coupang-subtitle">아래 [다음] 버튼을 누르면 나의 운세와 궁합이 공개됩니다 ✨</div>
+        <div style="font-size:36px;">🛍️ → 🔓</div>
+        <p class="coupang-fine-print">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+        <p class="lock-hint" id="lock-hint">👉 하단의 [운세 공개하기] 버튼을 눌러주세요</p>
+      </div>
+    </section>
+
+    <!-- 4페이지: 오늘의 운세 -->
+    <section class="slide" data-slide="4">
+      <div class="glass-card">
+        <div class="section-title">🔮 오늘의 운세</div>
+        <div class="fortune-grid">
+          <div class="fortune-item">
+            <span class="fortune-emoji">💕</span>
+            <span class="fortune-label">연애운</span>
+            <div class="fortune-stars" id="fortune-love"></div>
+          </div>
+          <div class="fortune-item">
+            <span class="fortune-emoji">💰</span>
+            <span class="fortune-label">금전운</span>
+            <div class="fortune-stars" id="fortune-money"></div>
+          </div>
+          <div class="fortune-item">
+            <span class="fortune-emoji">💪</span>
+            <span class="fortune-label">건강운</span>
+            <div class="fortune-stars" id="fortune-health"></div>
+          </div>
+          <div class="fortune-item">
+            <span class="fortune-emoji">💼</span>
+            <span class="fortune-label">직업운</span>
+            <div class="fortune-stars" id="fortune-work"></div>
+          </div>
+        </div>
+        <p id="fortune-message" style="margin-top:14px; font-size:13px; color:rgba(255,255,255,0.85); line-height:1.7; text-align:center;"></p>
+        <div style="margin-top:10px; font-size:12px; color:rgba(255,255,255,0.55); text-align:center;">
+          🎨 오늘의 행운 색상: <b id="fortune-lucky-color" style="color:#f472b6;"></b>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5페이지: 연간 운세 -->
+    <section class="slide" data-slide="5">
+      <div class="glass-card">
+        <div class="section-title" id="yearly-year-label">연간 운세</div>
+        <p id="fortune-yearly" style="font-size:14px; color:rgba(255,255,255,0.85); line-height:1.8;"></p>
+        <div id="fortune-yearly-detail"></div>
+      </div>
+    </section>
+
+    <!-- 6페이지: 궁합 -->
+    <section class="slide" data-slide="6">
+      <div class="glass-card">
+        <div class="section-title">💕 별자리 궁합 TOP3</div>
+        <div id="result-compat-list"></div>
+      </div>
+      <div class="glass-card">
+        <div class="section-title">⚠️ 주의할 별자리</div>
+        <div id="result-avoid"></div>
+      </div>
+    </section>
 
   </div>
-  <!-- /fortune-section -->
+  <!-- /slides-container -->
+
+  <div class="slide-nav-fixed">
+    <button id="slide-prev" class="slide-nav-btn prev">← 이전</button>
+    <div class="slide-dots" id="slide-dots"></div>
+    <button id="slide-next" class="slide-nav-btn next">다음 →</button>
+  </div>
 
 </div>
 <script src="data.js"></script>
