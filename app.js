@@ -1,366 +1,320 @@
-﻿/* ── 별 반짝임 ── */
-(function initTwinkle() {
+﻿// ===================== 배경 효과 =====================
+function initTwinkle() {
   const layer = document.getElementById('twinkle-layer');
   if (!layer) return;
   for (let i = 0; i < 80; i++) {
     const s = document.createElement('div');
-    const size = Math.random() * 2.5 + 0.5;
-    Object.assign(s.style, {
-      position: 'absolute',
-      width: size + 'px', height: size + 'px',
-      borderRadius: '50%',
-      background: 'rgba(255,255,255,' + (Math.random() * 0.7 + 0.2) + ')',
-      top: Math.random() * 100 + '%',
-      left: Math.random() * 100 + '%',
-      animation: 'twinkle ' + (Math.random() * 3 + 2) + 's ease-in-out ' + (Math.random() * 3) + 's infinite alternate'
-    });
+    s.style.cssText = `
+      position:absolute;
+      width:${Math.random()*3+1}px;
+      height:${Math.random()*3+1}px;
+      background:#fff;
+      border-radius:50%;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      opacity:${Math.random()*0.7+0.3};
+      animation:twinkle ${Math.random()*3+2}s infinite alternate;
+    `;
     layer.appendChild(s);
   }
-  if (!document.getElementById('twinkle-style')) {
-    const st = document.createElement('style');
-    st.id = 'twinkle-style';
-    st.textContent = '@keyframes twinkle{from{opacity:0.2;transform:scale(0.8)}to{opacity:1;transform:scale(1.2)}}';
-    document.head.appendChild(st);
-  }
-})();
+}
 
-/* ── 유성 ── */
-(function initShooting() {
+function initShootingStar() {
   const canvas = document.getElementById('shooting-star-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let stars = [];
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  function newStar() {
-    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.5,
-      len: Math.random() * 150 + 80, speed: Math.random() * 4 + 3,
-      angle: Math.PI / 4, alpha: 1 };
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+  const stars = [];
+  function spawnStar() {
+    stars.push({ x: Math.random()*canvas.width, y: 0, len: Math.random()*150+80, speed: Math.random()*6+4, angle: Math.PI/4, alpha: 1 });
   }
-  function animate() {
+  setInterval(spawnStar, 2500);
+  function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (Math.random() < 0.015) stars.push(newStar());
-    stars = stars.filter(s => s.alpha > 0.05);
-    stars.forEach(s => {
-      s.x += Math.cos(s.angle) * s.speed;
-      s.y += Math.sin(s.angle) * s.speed;
-      s.alpha -= 0.015;
+    stars.forEach((s, i) => {
+      s.x += Math.cos(s.angle)*s.speed;
+      s.y += Math.sin(s.angle)*s.speed;
+      s.alpha -= 0.012;
+      if (s.alpha <= 0) { stars.splice(i, 1); return; }
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(s.x, s.y);
-      ctx.lineTo(s.x - Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
-      const grad = ctx.createLinearGradient(s.x, s.y, s.x - Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
-      grad.addColorStop(0, 'rgba(255,255,255,' + s.alpha + ')');
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.5;
+      ctx.lineTo(s.x - Math.cos(s.angle)*s.len, s.y - Math.sin(s.angle)*s.len);
       ctx.stroke();
+      ctx.restore();
     });
-    requestAnimationFrame(animate);
+    requestAnimationFrame(draw);
   }
-  animate();
-})();
+  draw();
+}
 
-/* ── 홈 초기화 ── */
+// ===================== 홈 페이지 =====================
 function initHome() {
+  initTwinkle();
+  initShootingStar();
+
   const monthSel = document.getElementById('month-select');
   const daySel = document.getElementById('day-select');
-  const btn = document.getElementById('find-sign-btn');
+  const btn = document.getElementById('check-btn');
   const signListEl = document.getElementById('sign-list');
 
-  if (!monthSel || !daySel) return;
-
-  for (let m = 1; m <= 12; m++) {
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = m + '월';
-    monthSel.appendChild(opt);
-  }
-
-  function fillDays(month) {
-    daySel.innerHTML = '';
-    const days = [31,29,31,30,31,30,31,31,30,31,30,31][month-1] || 31;
-    for (let d = 1; d <= days; d++) {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = d + '일';
-      daySel.appendChild(opt);
+  // 월 옵션
+  if (monthSel) {
+    for (let m = 1; m <= 12; m++) {
+      const op = document.createElement('option');
+      op.value = m; op.textContent = m + '월';
+      monthSel.appendChild(op);
     }
   }
-  fillDays(1);
-  monthSel.addEventListener('change', () => fillDays(parseInt(monthSel.value)));
+  // 일 옵션
+  function updateDays() {
+    if (!daySel) return;
+    const m = parseInt(monthSel?.value || 1);
+    const days = [31,29,31,30,31,30,31,31,30,31,30,31][m-1] || 31;
+    daySel.innerHTML = '';
+    for (let d = 1; d <= days; d++) {
+      const op = document.createElement('option');
+      op.value = d; op.textContent = d + '일';
+      daySel.appendChild(op);
+    }
+  }
+  if (monthSel) { monthSel.addEventListener('change', updateDays); updateDays(); }
 
-  if (signListEl && typeof ZODIAC_ORDER !== 'undefined') {
+  // 별자리 그리드
+  if (signListEl) {
     signListEl.className = 'sign-grid';
-    signListEl.innerHTML = '';
     ZODIAC_ORDER.forEach(key => {
       const z = ZODIAC[key];
-      if (!z) return;
       const a = document.createElement('a');
-      a.href = 'result.html?sign=' + key;
+      a.href = `result.html?sign=${key}`;
       a.className = 'sign-card';
-      a.innerHTML =
-        '<span class="sign-symbol">' + z.symbol + '</span>' +
-        '<span class="sign-name">' + z.name + '</span>' +
-        '<span class="sign-date">' + z.dateRange + '</span>';
+      a.innerHTML = `
+        <span class="sign-symbol">${z.symbol}</span>
+        <span class="sign-name">${z.name}</span>
+        <span class="sign-date">${z.dateRange}</span>
+      `;
       signListEl.appendChild(a);
+    });
+  }
+
+  // 날짜로 별자리 찾기 버튼
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const m = parseInt(monthSel?.value || 0);
+      const d = parseInt(daySel?.value || 0);
+      if (!m || !d) return;
+      const key = getZodiacKeyByDate(m, d);
+      if (key) window.location.href = `result.html?sign=${key}`;
+    });
+  }
+}
+
+// ===================== 결과 페이지 =====================
+function initResult() {
+  initTwinkle();
+  initShootingStar();
+
+  const params = new URLSearchParams(window.location.search);
+  const key = params.get('sign');
+  if (!key || !ZODIAC[key]) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const z = ZODIAC[key];
+
+  // 기본 정보
+  document.getElementById('result-symbol').textContent = z.symbol;
+  document.getElementById('result-name').textContent = z.name;
+  document.getElementById('result-date').textContent = z.dateRange;
+
+  const elEl = document.getElementById('result-element');
+  if (elEl) elEl.textContent = z.element || '';
+  const plEl = document.getElementById('result-planet');
+  if (plEl) plEl.textContent = z.planet || '';
+
+  // 특성 뱃지
+  const traitsEl = document.getElementById('result-traits');
+  if (traitsEl && z.traits) {
+    traitsEl.innerHTML = z.traits.map(t => `<span class="trait-badge">${t}</span>`).join('');
+  }
+
+  // ⭐ 능력치 바
+  if (z.stats) {
+    const statMap = {
+      leadership: ['stat-bar-leadership', 'stat-val-leadership'],
+      sensitivity: ['stat-bar-sensitivity', 'stat-val-sensitivity'],
+      activity:    ['stat-bar-activity',    'stat-val-activity'],
+      creativity:  ['stat-bar-creativity',  'stat-val-creativity'],
+      sociability: ['stat-bar-sociability', 'stat-val-sociability'],
+    };
+    setTimeout(() => {
+      Object.entries(statMap).forEach(([statKey, [barId, valId]]) => {
+        const val = z.stats[statKey] || 0;
+        const bar = document.getElementById(barId);
+        const valEl = document.getElementById(valId);
+        if (bar) bar.style.width = val + '%';
+        if (valEl) valEl.textContent = val;
+      });
+    }, 100);
+  }
+
+  // 수호 아이템
+  const stoneEl = document.getElementById('result-stone');
+  const colorEl = document.getElementById('result-color');
+  const animalEl = document.getElementById('result-animal');
+  const luckyEl = document.getElementById('result-lucky');
+  if (stoneEl) stoneEl.textContent = z.guardianStone || '';
+  if (colorEl) colorEl.textContent = z.guardianColor || '';
+  if (animalEl) animalEl.textContent = z.guardianAnimal || '';
+  if (luckyEl) luckyEl.textContent = (z.luckyNumbers || []).join(', ');
+
+  // 별자리 설명 (있으면 표시)
+  const descEl = document.getElementById('result-description');
+  if (descEl && z.description) descEl.textContent = z.description;
+
+  // 잠금 버튼 연동
+  const lockBtn = document.getElementById('lock-btn');
+  if (lockBtn) {
+    const coupangUrl = z.coupang || '#';
+    lockBtn.addEventListener('click', () => {
+      // 쿠팡 새탭 열기
+      window.open(coupangUrl, '_blank');
+      // 운세 공개
+      setTimeout(() => unlockFortune(key, z), 500);
+    });
+  }
+}
+
+// ===================== 운세 공개 =====================
+function unlockFortune(key, z) {
+  // 잠금 배너 숨기기
+  const lockSection = document.getElementById('lock-section');
+  if (lockSection) lockSection.style.display = 'none';
+
+  // 운세 섹션 보이기
+  const fortuneSection = document.getElementById('fortune-section');
+  if (fortuneSection) fortuneSection.style.display = 'block';
+
+  // 오늘의 운세 계산
+  const fortune = getDailyFortune(key);
+
+  // 별점 렌더
+  function stars(n) { return '⭐'.repeat(n) + '☆'.repeat(5-n); }
+
+  const fl = document.getElementById('fortune-love');
+  const fm = document.getElementById('fortune-money');
+  const fh = document.getElementById('fortune-health');
+  const fw = document.getElementById('fortune-work');
+  if (fl) fl.textContent = stars(fortune.love);
+  if (fm) fm.textContent = stars(fortune.money);
+  if (fh) fh.textContent = stars(fortune.health);
+  if (fw) fw.textContent = stars(fortune.work);
+
+  // 운세 메시지
+  const msgEl = document.getElementById('fortune-message');
+  if (msgEl) msgEl.textContent = fortune.message || '';
+
+  // 행운 색상 & 조언
+  const lcEl = document.getElementById('fortune-lucky-color');
+  const laEl = document.getElementById('fortune-lucky-advice');
+  if (lcEl) lcEl.textContent = fortune.luckyColor || '';
+  if (laEl) laEl.textContent = fortune.luckyAdvice || '';
+
+  // 연간 운세 (현재 연도 자동)
+  const currentYear = new Date().getFullYear();
+  const yearlyEl = document.getElementById('fortune-yearly');
+  if (yearlyEl) {
+    const yearly = z.yearlyForecast?.[currentYear] || z.yearlyForecast?.[2026] || '올 한 해도 별자리의 기운을 받아 좋은 일이 가득하길 바랍니다!';
+    yearlyEl.textContent = yearly;
+    const yearLabelEl = document.getElementById('yearly-year-label');
+    if (yearLabelEl) yearLabelEl.textContent = currentYear + '년 연간 운세';
+  }
+
+  // 궁합 TOP 3
+  const compatEl = document.getElementById('result-compat-list');
+  if (compatEl && z.compatibility) {
+    const top3 = z.compatibility.top3 || [];
+    const avoid = z.compatibility.avoid || [];
+    compatEl.innerHTML = top3.map(k => {
+      const cz = ZODIAC[k];
+      return cz ? `<div class="compat-item good">${cz.symbol} <b>${cz.name}</b> — 찰떡 궁합! 💕</div>` : '';
+    }).join('') +
+    avoid.map(k => {
+      const cz = ZODIAC[k];
+      return cz ? `<div class="compat-item caution">${cz.symbol} <b>${cz.name}</b> — 신중하게 ⚠️</div>` : '';
+    }).join('');
+  }
+
+  // 스크롤
+  if (fortuneSection) fortuneSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===================== 궁합 페이지 =====================
+function initCompat() {
+  initTwinkle();
+  initShootingStar();
+
+  const sel1 = document.getElementById('compat-sign1');
+  const sel2 = document.getElementById('compat-sign2');
+  const btn = document.getElementById('compat-btn');
+
+  if (sel1 && sel2) {
+    ZODIAC_ORDER.forEach(key => {
+      const z = ZODIAC[key];
+      [sel1, sel2].forEach(sel => {
+        const op = document.createElement('option');
+        op.value = key;
+        op.textContent = z.symbol + ' ' + z.name;
+        sel.appendChild(op);
+      });
     });
   }
 
   if (btn) {
     btn.addEventListener('click', () => {
-      const m = parseInt(monthSel.value);
-      const d = parseInt(daySel.value);
-      const key = getZodiacKeyByDate(m, d);
-      if (key) window.location.href = 'result.html?sign=' + key;
+      const k1 = sel1?.value;
+      const k2 = sel2?.value;
+      if (!k1 || !k2) return;
+      showCompat(k1, k2);
     });
   }
 }
 
-/* ── 결과 페이지 ── */
-function initResult() {
-  const params = new URLSearchParams(window.location.search);
-  const key = params.get('sign');
-  if (!key || !ZODIAC[key]) return;
-  const z = ZODIAC[key];
+function showCompat(k1, k2) {
+  const z1 = ZODIAC[k1];
+  const z2 = ZODIAC[k2];
+  if (!z1 || !z2) return;
 
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+  const score = getCompatScore(k1, k2);
+  const grade = getCompatGrade(score);
 
-  // 기본 정보
-  setEl('result-symbol', z.symbol);
-  setEl('result-name', z.name);
-  setEl('result-date', z.dateRange);
-  setEl('result-element', z.element);
-  setEl('result-planet', z.planet);
-  setEl('result-stone', z.guardianStone);
-  setEl('result-color', z.guardianColor);
-  setEl('result-animal', z.guardianAnimal);
-  setEl('result-lucky', z.luckyNumber);
-
-  // 특성 카드
-  const traitsEl = document.getElementById('result-traits');
-  if (traitsEl && z.traits) {
-    traitsEl.innerHTML = z.traits.map(t =>
-      '<div style="display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07);">' +
-        '<span style="font-size:22px; flex-shrink:0;">' + t.icon + '</span>' +
-        '<div>' +
-          '<div style="font-size:13px; font-weight:700; margin-bottom:3px;">' + t.title + '</div>' +
-          '<div style="font-size:12px; color:rgba(255,255,255,0.65); line-height:1.6;">' + t.desc + '</div>' +
-        '</div>' +
-      '</div>'
-    ).join('');
-  }
-
-  // 능력치 바 (data.js 키: leadership, sensitivity, activity, creativity, sociability)
-  ['leadership','sensitivity','activity','creativity','sociability'].forEach(stat => {
-    const barEl = document.getElementById('stat-bar-' + stat);
-    const valEl = document.getElementById('stat-val-' + stat);
-    if (z.stats && z.stats[stat] != null) {
-      setTimeout(() => { if (barEl) barEl.style.width = z.stats[stat] + '%'; }, 100);
-      if (valEl) valEl.textContent = z.stats[stat];
-    }
-  });
-
-  // 쿠팡 링크
-  const cpBtn = document.getElementById('result-coupang-btn');
-  if (cpBtn && z.coupang) cpBtn.href = z.coupang;
-
-  // 운세 데이터 미리 계산 (잠금 해제 시 사용)
-  window._zodiacKey = key;
-  window._zodiacData = z;
-}
-
-/* ── 잠금 해제 (쿠팡 클릭 시) ── */
-function unlockFortune() {
-  const key = window._zodiacKey;
-  const z = window._zodiacData;
-  if (!key || !z) return;
-
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
-
-  // 오늘의 운세
-  if (typeof getDailyFortune === 'function') {
-    const fortune = getDailyFortune(key);
-    const stars = n => '⭐'.repeat(n) + '☆'.repeat(5 - n);
-    setHTML('fortune-love', stars(fortune.love.stars));
-    setHTML('fortune-money', stars(fortune.money.stars));
-    setHTML('fortune-health', stars(fortune.health.stars));
-    setHTML('fortune-work', stars(fortune.work.stars));
-
-    setHTML('fortune-messages',
-      '💕 연애: ' + fortune.love.message + '<br>' +
-      '💰 금전: ' + fortune.money.message + '<br>' +
-      '💪 건강: ' + fortune.health.message + '<br>' +
-      '💼 직업: ' + fortune.work.message
-    );
-    setEl('fortune-lucky-color', fortune.luckyColor.name);
-    setEl('fortune-lucky-num', fortune.luckyNumber);
-    setEl('fortune-advice', fortune.advice);
-  }
-
-  // 연간 운세 (자동 연도)
-  const currentYear = new Date().getFullYear();
-  const yearlyKey = 'yearly' + currentYear;
-  const yearly = z[yearlyKey] || z.yearly2026;
-  setEl('yearly-title', currentYear + '년');
-  if (yearly) {
-    setEl('yearly-overall', yearly.overall);
-    setEl('yearly-love', yearly.love);
-    setEl('yearly-money', yearly.money);
-    setEl('yearly-health', yearly.health);
-    setEl('yearly-work', yearly.work);
-  }
-
-  // 궁합 TOP3
-  const compatTop = document.getElementById('result-compat-top');
-  if (compatTop && z.compatibility && z.compatibility.top3) {
-    compatTop.innerHTML = z.compatibility.top3.map((c, i) => {
-      const partner = ZODIAC[c.sign];
-      if (!partner) return '';
-      return '<div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07);">' +
-        '<span style="font-size:28px;">' + partner.symbol + '</span>' +
-        '<div>' +
-          '<div style="font-size:13px; font-weight:700;">' + ['💕 1위','👍 2위','😊 3위'][i] + ' ' + partner.name + '</div>' +
-          '<div style="font-size:12px; color:rgba(255,255,255,0.65); margin-top:2px;">' + c.reason + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }
-
-  // 주의 별자리
-  const avoid = z.compatibility && z.compatibility.avoid;
-  if (avoid) {
-    const avoidZ = ZODIAC[avoid.sign];
-    if (avoidZ) {
-      setHTML('result-compat-avoid',
-        avoidZ.symbol + ' <b>' + avoidZ.name + '</b> — ' + avoid.reason
-      );
-    }
-  }
-
-  // 잠금 배너 숨기고 운세 섹션 표시
-  const banner = document.getElementById('lock-banner');
-  const section = document.getElementById('fortune-section');
-  if (banner) banner.style.display = 'none';
-  if (section) {
-    section.style.display = 'block';
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-/* ── 궁합 초기화 ── */
-function initCompat() {
-  const mySel = document.getElementById('my-sign-select');
-  const partSel = document.getElementById('partner-sign-select');
-  if (!mySel || !partSel || typeof ZODIAC_ORDER === 'undefined') return;
-
-  ZODIAC_ORDER.forEach(key => {
-    const z = ZODIAC[key];
-    [mySel, partSel].forEach(sel => {
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = z.symbol + ' ' + z.name;
-      sel.appendChild(opt);
-    });
-  });
-
-  const btn = document.getElementById('compat-btn');
-  if (btn) btn.addEventListener('click', showCompat);
-}
-
-/* ── 궁합 결과 ── */
-function showCompat() {
-  const myKey = document.getElementById('my-sign-select').value;
-  const partKey = document.getElementById('partner-sign-select').value;
-  if (!myKey || !partKey) return;
-
-  const myZ = ZODIAC[myKey];
-  const partZ = ZODIAC[partKey];
-  const score = getCompatScore(myKey, partKey);
-  const gradeObj = getCompatGrade(score);
-
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
-
-  setEl('compat-symbol-a', myZ.symbol);
-  setEl('compat-symbol-b', partZ.symbol);
-  setEl('compat-name-a', myZ.name);
-  setEl('compat-name-b', partZ.name);
-  setEl('compat-score-num', score);
-  setEl('compat-grade', gradeObj.emoji + ' ' + gradeObj.label);
-
-  const detailEl = document.getElementById('compat-detail-text');
-  if (detailEl) {
-    detailEl.textContent = myZ.name + '과(와) ' + partZ.name + '의 궁합은 '
-      + (score >= 85 ? '최고예요! 별들이 두 분의 인연을 강하게 축복하고 있어요 ✨'
-        : score >= 70 ? '좋은 편이에요. 서로를 이해하며 함께 성장할 수 있는 관계예요 🌙'
-        : score >= 55 ? '보통이에요. 노력과 배려로 더 좋아질 수 있는 관계예요 😊'
-        : '주의가 필요해요. 하지만 이해와 존중으로 극복할 수 있어요 💪');
-  }
-
-  const goodData = score >= 70
-    ? ['감정적으로 서로를 자연스럽게 이해해요', '함께할 때 시너지 에너지가 넘쳐요', '공통 관심사가 많아 대화가 즐거워요']
-    : score >= 55
-    ? ['서로의 부족한 점을 채워줄 수 있어요', '다른 시각이 새로운 자극이 돼요', '함께 성장하는 파트너가 될 수 있어요']
-    : ['인내심을 키워주는 관계예요', '서로에게서 배울 점이 많아요', '극복하면 더 단단해지는 사이가 돼요'];
-
-  const cautionData = score >= 70
-    ? ['너무 비슷해 의존도가 높아질 수 있어요', '새로운 자극과 도전이 필요할 수 있어요']
-    : score >= 55
-    ? ['소통 방식의 차이로 오해가 생길 수 있어요', '서로의 페이스 차이를 인정해야 해요']
-    : ['가치관 차이로 마찰이 생길 수 있어요', '충분한 대화와 이해가 꼭 필요해요', '감정적인 반응을 조절하는 연습이 필요해요'];
-
-  const goodList = document.getElementById('compat-good-list');
-  const cautionList = document.getElementById('compat-caution-list');
-  if (goodList) goodList.innerHTML = goodData.map(t => '<li>' + t + '</li>').join('');
-  if (cautionList) cautionList.innerHTML = cautionData.map(t => '<li>' + t + '</li>').join('');
-
-  const cpBtn = document.getElementById('compat-coupang-btn');
-  if (cpBtn) cpBtn.href = (myZ.coupang || '#');
-
-  const chartCanvas = document.getElementById('compat-radar-chart');
-  if (chartCanvas && typeof Chart !== 'undefined') {
-    const existing = Chart.getChart(chartCanvas);
-    if (existing) existing.destroy();
-    const rd = n => Math.min(99, Math.max(40, score + n));
-    new Chart(chartCanvas, {
-      type: 'radar',
-      data: {
-        labels: ['애정', '신뢰', '소통', '열정', '미래'],
-        datasets: [{
-          data: [rd(2), rd(-5), rd(3), rd(-3), rd(1)],
-          backgroundColor: 'rgba(167,139,250,0.2)',
-          borderColor: 'rgba(167,139,250,0.8)',
-          borderWidth: 2,
-          pointBackgroundColor: '#f472b6',
-          pointRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          r: {
-            min: 0, max: 100,
-            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 }, stepSize: 20 },
-            grid: { color: 'rgba(255,255,255,0.1)' },
-            pointLabels: { color: '#e2e8f0', font: { size: 12 } }
-          }
-        }
-      }
-    });
-  }
-
+  const s1El = document.getElementById('compat-sym1');
+  const s2El = document.getElementById('compat-sym2');
+  const n1El = document.getElementById('compat-name1');
+  const n2El = document.getElementById('compat-name2');
+  const scoreEl = document.getElementById('compat-score');
+  const gradeEl = document.getElementById('compat-grade');
   const resultEl = document.getElementById('compat-result');
-  if (resultEl) {
-    resultEl.classList.add('show');
-    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+
+  if (s1El) s1El.textContent = z1.symbol;
+  if (s2El) s2El.textContent = z2.symbol;
+  if (n1El) n1El.textContent = z1.name;
+  if (n2El) n2El.textContent = z2.name;
+  if (scoreEl) scoreEl.textContent = score + '점';
+  if (gradeEl) gradeEl.textContent = grade;
+  if (resultEl) { resultEl.style.display = 'block'; resultEl.scrollIntoView({ behavior: 'smooth' }); }
 }
 
-/* ── 라우팅 ── */
+// ===================== 라우팅 =====================
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page;
   if (page === 'home') initHome();
